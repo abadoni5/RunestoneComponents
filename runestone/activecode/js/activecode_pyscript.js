@@ -40,7 +40,7 @@ export default class PyScriptActiveCode extends ActiveCode {
         <body>
             <py-config>
                 terminal = false
-                packages = [ "pandas", "numpy", "matplotlib"]
+                packages = [ "pandas", "numpy", "matplotlib", "sympy"]
             </py-config>
             <pre id="consolePre">
                 <code id="consoleCode"></code>
