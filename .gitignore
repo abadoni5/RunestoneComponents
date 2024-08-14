@@ -65,3 +65,6 @@ runestone/assess/.DS_Store
 .DS_Store
 .history
 .nova
+
+# Tool Version Controller
+.tool-versions
