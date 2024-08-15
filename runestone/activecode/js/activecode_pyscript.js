@@ -29,12 +29,26 @@ export default class PyScriptActiveCode extends ActiveCode {
             <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/default.min.css">
             <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/highlight.min.js"></script>
             <style>
-                .output-div {
+                #plot_area {
+                    width: 100%;
+                    height: 400px;
+                    margin-bottom: 20px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 10px;
+                    background-color: #f8f8f8;
+                }
+                #console {
                     width: 100%;
                     min-height: 100px;
                     margin-bottom: 10px;
-                    border: 1px solid #ccc;
-                    padding: 5px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 10px;
+                    font-family: monospace;
+                    background-color: #f5f5f5;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
                 }
             </style>
         </head>
@@ -43,7 +57,8 @@ export default class PyScriptActiveCode extends ActiveCode {
                 terminal = false
                 packages = ["pandas", "numpy", "matplotlib", "sympy"]
             </py-config>
-            <div id="output-container"></div>
+            <div id="plot_area"></div>
+            <div id="console"></div>
             <py-script>
 import sys
 from js import document
@@ -57,23 +72,19 @@ class NewOut:
 sys.stderr = sys.stdout = NewOut()
 
 def display(obj, target="console"):
-    container = document.getElementById('output-container')
     target_div = document.getElementById(target)
     if not target_div:
-        target_div = document.createElement('div')
-        target_div.id = target
-        target_div.className = 'output-div'
-        container.appendChild(target_div)
+        raise ValueError(f"Target div '{target}' not found")
     
-    if isinstance(obj, plt.Figure):
+    if target == "plot_area" and isinstance(obj, plt.Figure):
         buf = io.BytesIO()
-        obj.savefig(buf, format='png')
+        obj.savefig(buf, format='png', dpi=100, bbox_inches='tight')
         buf.seek(0)
         img_str = base64.b64encode(buf.getvalue()).decode('utf-8')
-        target_div.innerHTML += f'<img src="data:image/png;base64,{img_str}" />'
+        target_div.innerHTML = f'<img src="data:image/png;base64,{img_str}" style="max-width:100%;height:auto;" />'
         plt.close(obj)
-    else:
-        target_div.innerHTML += str(obj) + '<br>'
+    elif target == "console":
+        target_div.innerHTML += str(obj) + '\\n'
 
 def my_exec(code):
     try:
@@ -112,7 +123,7 @@ my_exec("""${prog}
         $(this.output).css({
             "background-color": "white",
             "position": "relative",
-            "height": "600px",
+            "height": "700px",
             "width": "100%"
         });
         outDiv.appendChild(this.output);
