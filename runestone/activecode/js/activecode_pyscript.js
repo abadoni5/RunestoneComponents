@@ -83,14 +83,18 @@ def display(obj, target="console"):
     target_div = document.getElementById(target)
     if not target_div:
         raise ValueError(f"Target div '{target}' not found")
-    
-    if target == "plot_area" and isinstance(obj, plt.Figure):
+
+    if target == "plot_area":
+        if isinstance(obj, plt.Figure):
+            fig = obj
+        else:
+            fig = plt.gcf()
         buf = io.BytesIO()
-        obj.savefig(buf, format='png', dpi=100, bbox_inches='tight')
+        fig.savefig(buf, format='png', dpi=100, bbox_inches='tight')
         buf.seek(0)
         img_str = base64.b64encode(buf.getvalue()).decode('utf-8')
         target_div.innerHTML = f'<img src="data:image/png;base64,{img_str}" />'
-        plt.close(obj)
+        plt.close(fig)
     elif target == "console":
         target_div.innerHTML += str(obj) + '\\n'
         target_div.scrollTop = target_div.scrollHeight
