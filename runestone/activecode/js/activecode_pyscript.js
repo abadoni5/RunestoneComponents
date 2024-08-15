@@ -29,77 +29,50 @@ export default class PyScriptActiveCode extends ActiveCode {
             <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/default.min.css">
             <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/highlight.min.js"></script>
             <style>
-                #output-container {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100vh;
-                }
-                #console-output {
-                    flex: 1;
-                    overflow-y: auto;
-                    padding: 10px;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                    margin-bottom: 10px;
-                }
-                #plot-output {
-                    flex: 2;
-                    border: 1px solid #ccc;
-                    border-radius: 4px;
-                }
                 pre {
-                    margin: 0;
-                    white-space: pre-wrap;
-                    word-wrap: break-word;
+                    position: absolute; font-size: 13px; width: 94%; padding: 9.5px; line-height: 1.42857143; border: 1px ; border-radius: 4px;
+                }
+                code{
+                    border: 1px solid #ccc; border-radius: 4px;
                 }
             </style>
         </head>
         <body>
             <py-config>
                 terminal = false
-                packages = ["pandas", "numpy", "matplotlib", "sympy"]
+                packages = [ "pandas", "numpy", "matplotlib"]
             </py-config>
-            <div id="output-container">
-                <div id="console-output">
-                    <pre><code id="consoleCode"></code></pre>
-                </div>
-                <div id="plot-output"></div>
-            </div>
+            <pre id="consolePre">
+                <code id="consoleCode"></code>
+            </pre>
             <py-script>
 import sys
 from js import document
-import matplotlib.pyplot as plt
-from sympy import Symbol, sin, cos, pi
-from sympy.plotting import plot
-
 logger = document.getElementById('consoleCode')
-plot_div = document.getElementById('plot-output')
+preElem = document.getElementById('consolePre')
 
 class NewOut:
     def write(self, data):
         logger.innerHTML += str(data)
-
 sys.stderr = sys.stdout = NewOut()
-
-def display(fig):
-    plot_div.innerHTML = ''  # Clear previous plot
-    if hasattr(fig, 'canvas'):  # Matplotlib figure
-        fig.canvas.render()
-        plot_div.appendChild(fig.canvas)
-    elif hasattr(fig, '_backend'):  # SymPy plot
-        fig._backend.fig.canvas.render()
-        plot_div.appendChild(fig._backend.fig.canvas)
-    else:
-        print("Unsupported plot type")
 
 def my_exec(code):
     try:
         exec(code)
+        preElem.style.visibility = "visible"
+        preElem.style.bottom = "5px"
+        logger.classList.add("plaintext")
     except Exception as err:
         error_class = err.__class__.__name__
         detail = err.args[0]
-        result = f"'{error_class}': {detail}"
+        line_number = ""  # PyScript does not currently expose line numbers
+        result = f"'{error_class}': {detail} {line_number}"
         print(result)
+        # Styling the pre element for error
+        preElem.style.visibility = "visible"
+        preElem.style.top = "5px"
+        preElem.style.backgroundColor = "#f2dede"
+        preElem.style.border = "1px solid #ebccd1"
         logger.classList.add("python")
 
 # usage
