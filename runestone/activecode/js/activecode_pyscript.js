@@ -29,19 +29,10 @@ export default class PyScriptActiveCode extends ActiveCode {
             <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/styles/default.min.css">
             <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.0.1/highlight.min.js"></script>
             <style>
-                #plot_area {
-                    width: 100%;
-                    height: 400px;
-                    margin-bottom: 20px;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    padding: 10px;
-                    background-color: #f8f8f8;
-                }
                 #console {
                     width: 100%;
-                    min-height: 100px;
-                    margin-bottom: 10px;
+                    height: 150px;
+                    margin-bottom: 20px;
                     border: 1px solid #ddd;
                     border-radius: 4px;
                     padding: 10px;
@@ -49,6 +40,23 @@ export default class PyScriptActiveCode extends ActiveCode {
                     background-color: #f5f5f5;
                     white-space: pre-wrap;
                     word-wrap: break-word;
+                    overflow-y: auto;
+                }
+                #plot_area {
+                    width: 100%;
+                    height: 500px;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    padding: 10px;
+                    background-color: #f8f8f8;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+                #plot_area img {
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
                 }
             </style>
         </head>
@@ -57,8 +65,8 @@ export default class PyScriptActiveCode extends ActiveCode {
                 terminal = false
                 packages = ["pandas", "numpy", "matplotlib", "sympy"]
             </py-config>
-            <div id="plot_area"></div>
             <div id="console"></div>
+            <div id="plot_area"></div>
             <py-script>
 import sys
 from js import document
@@ -81,10 +89,11 @@ def display(obj, target="console"):
         obj.savefig(buf, format='png', dpi=100, bbox_inches='tight')
         buf.seek(0)
         img_str = base64.b64encode(buf.getvalue()).decode('utf-8')
-        target_div.innerHTML = f'<img src="data:image/png;base64,{img_str}" style="max-width:100%;height:auto;" />'
+        target_div.innerHTML = f'<img src="data:image/png;base64,{img_str}" />'
         plt.close(obj)
     elif target == "console":
         target_div.innerHTML += str(obj) + '\\n'
+        target_div.scrollTop = target_div.scrollHeight
 
 def my_exec(code):
     try:
@@ -123,7 +132,7 @@ my_exec("""${prog}
         $(this.output).css({
             "background-color": "white",
             "position": "relative",
-            "height": "700px",
+            "height": "750px",
             "width": "100%"
         });
         outDiv.appendChild(this.output);
